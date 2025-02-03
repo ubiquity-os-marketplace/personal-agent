@@ -1,3 +1,4 @@
+import "./sourcemap-register.cjs";
 import { createRequire as e } from "module";
 var t = {
   4914: function (e, t, r) {
@@ -31614,27 +31615,17 @@ async function returnDataToKernel(e, t, r) {
   });
 }
 async function helloWorld(e) {
-  const {
-    logger: t,
-    payload: r,
-    config: { configurableResponse: s, customStringsUrl: o },
-  } = e;
-  const A = r.comment.user?.login;
-  const n = r.repository.name;
-  const i = r.issue.number;
-  const a = r.repository.owner.login;
-  const c = r.comment.body;
-  if (!RegExp(/hello/i).exec(c)) {
-    t.error(`Invalid use of slash command, use "/hello".`, { body: c });
-    return;
+  const { logger: t, payload: r } = e;
+  const s = r.comment.user?.login;
+  const o = r.repository.name;
+  const A = r.issue.number;
+  const n = r.repository.owner.login;
+  const i = r.comment.body;
+  if (!i.trim().startsWith("@")) {
+    throw t.error(`Comment does not start with @`, { body: i });
   }
-  t.info("Hello, world!");
-  t.debug(`Executing helloWorld:`, { sender: A, repo: n, issueNumber: i, owner: a });
-  await postComment(e, t.ok(s));
-  if (o) {
-    const r = await fetch(o).then((e) => e.json());
-    await postComment(e, t.ok(r.greeting));
-  }
+  t.debug(`Executing helloWorld:`, { sender: s, repo: o, issueNumber: A, owner: n });
+  await postComment(e, t.ok("Hello, world!"));
   t.ok(`Successfully created comment!`);
   t.verbose(`Exiting helloWorld`);
 }
@@ -31650,14 +31641,15 @@ async function runPlugin(e) {
 }
 var Rt = __nccwpck_require__(2874);
 const Tt = tt.Object({ LOG_LEVEL: tt.Optional(tt.Enum(n, { default: n.INFO })), KERNEL_PUBLIC_KEY: tt.Optional(tt.String()) });
-const kt = tt.Object({ configurableResponse: tt.String({ default: "Hello, world!" }), customStringsUrl: tt.Optional(tt.String()) }, { default: {} });
+const kt = tt.Object({}, { default: {} });
 const _t = createActionsPlugin((e) => runPlugin(e), {
   logLevel: process.env.LOG_LEVEL || n.INFO,
   settingsSchema: kt,
   envSchema: Tt,
   ...(process.env.KERNEL_PUBLIC_KEY && { kernelPublicKey: process.env.KERNEL_PUBLIC_KEY }),
   postCommentOnError: true,
-  bypassSignatureVerification: process.env.NODE_ENV === "local",
+  bypassSignatureVerification: true,
 });
 var Dt = s.A;
 export { Dt as default };
+//# sourceMappingURL=index.js.map
