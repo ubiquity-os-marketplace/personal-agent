@@ -5,6 +5,58 @@
 - A good understanding of how the [kernel](https://github.com/ubiquity/ubiquibot-kernel) works and how to interact with it.
 - A basic understanding of the Ubiquibot configuration and how to define your plugin's settings.
 
+## Technical Architecture
+
+### Core Components
+
+#### Plugin SDK Integration
+- Built on `@ubiquity-os/plugin-sdk` for core functionality
+- Provides structured plugin creation via `createPlugin`
+- Handles request validation and error management
+- Supports signature verification for security
+
+#### Application Structure
+```
+src/
+├── index.ts          # Main plugin logic and event routing
+├── worker.ts         # Cloudflare Worker implementation
+├── action.ts         # Action handling
+├── handlers/         # Event-specific handlers
+│   └── hello-world.ts # Example handler implementation
+└── types/           
+    ├── context.ts    # Event context types
+    ├── env.ts        # Environment configurations
+    ├── plugin-input.ts # Plugin configuration types
+    └── typeguards.ts  # Type safety utilities
+```
+
+#### Type System
+- Comprehensive TypeScript type definitions
+- Strong typing for plugin settings and configurations
+- Event-specific type guards for runtime safety
+- Environment variable schema validation
+
+#### Event Handling
+- Event-driven architecture with typed events
+- Modular handler system in `handlers/` directory
+- Type guards for event validation
+- Context-aware handler execution
+
+#### Development Features
+- TypeScript for type safety
+- ESLint and Prettier for code quality
+- Jest for unit testing
+- Husky for git hooks
+- Commitlint for commit message standards
+- CSpell for spell checking
+- Knip for dependency analysis
+
+#### Security Features
+- Kernel public key verification
+- Environment-based signature verification bypass for local development
+- Secure environment variable handling
+- Type-safe input validation
+
 ## Getting Started
 
 1. Create a new repository using this template.
