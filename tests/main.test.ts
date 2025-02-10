@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { drop } from "@mswjs/data";
+import { CommentHandler } from "@ubiquity-os/plugin-sdk";
 import { customOctokit as Octokit } from "@ubiquity-os/plugin-sdk/octokit";
 import { Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
@@ -107,7 +108,7 @@ function createContextInner(
   sender: Context["payload"]["sender"],
   issue: Context["payload"]["issue"],
   comment: Context["payload"]["comment"]
-) {
+): Context {
   return {
     eventName: "issue_comment.created",
     command: null,
@@ -120,9 +121,10 @@ function createContextInner(
       installation: { id: 1 } as Context["payload"]["installation"],
       organization: { login: STRINGS.USER } as Context["payload"]["organization"],
     },
-    logger: new Logs("debug"),
+    logger: new Logs("debug") as unknown as Context["logger"],
     config: {},
     env: {} as Env,
     octokit: octokit,
-  } as unknown as Context;
+    commentHandler: new CommentHandler(),
+  };
 }

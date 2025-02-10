@@ -1,4 +1,3 @@
-import { postComment } from "@ubiquity-os/plugin-sdk";
 import { Context } from "../types";
 
 export async function helloWorld(context: Context) {
@@ -16,7 +15,7 @@ export async function helloWorld(context: Context) {
 
   logger.debug(`Executing helloWorld:`, { sender, repo, issueNumber, owner });
 
-  await postComment(context, logger.ok("Hello, world!"));
+  await context.commentHandler.postComment(context, logger.ok("Hello, world!"));
 
   logger.ok(`Successfully created comment!`);
   logger.verbose(`Exiting helloWorld`);
