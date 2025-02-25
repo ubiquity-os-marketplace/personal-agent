@@ -31405,7 +31405,7 @@ async function helloWorld(e) {
   const a = e.env.AGENT_OWNER;
   t.info(`Executing helloWorld:`, { sender: s, repo: o, issueNumber: A, owner: n, agentOwner: a });
   if (!i.trim().startsWith(`@${a}`)) {
-    throw t.error(`Comment does not start with @`, { body: i });
+    throw t.error(`Comment does not start with @${a}`, { body: i });
   }
   await e.commentHandler.postComment(e, t.ok("Hello, world!"));
   t.ok(`Successfully created comment!`);
