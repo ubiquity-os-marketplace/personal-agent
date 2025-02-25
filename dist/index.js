@@ -31141,6 +31141,30 @@ var Qt = class _CommentHandler {
     return this._createNewComment(e, { ...c, commentId: n });
   }
 };
+function transformError(e, t) {
+  let r;
+  if (t instanceof AggregateError) {
+    r = e.logger.error(
+      t.errors
+        .map((e) => {
+          if (e instanceof a) {
+            return e.logMessage.raw;
+          } else if (e instanceof Error) {
+            return e.message;
+          } else {
+            return e;
+          }
+        })
+        .join("\n\n"),
+      { error: t }
+    );
+  } else if (t instanceof Error || t instanceof a) {
+    r = t;
+  } else {
+    r = e.logger.error(String(t));
+  }
+  return r;
+}
 var Bt = {
   throttle: {
     onAbuseLimit: (e, t, r) => {
@@ -31270,12 +31294,7 @@ function createPlugin(e, t, r) {
       return t.json({ stateId: n.stateId, output: r ?? {} });
     } catch (e) {
       console.error(e);
-      let t;
-      if (e instanceof Error || e instanceof LogReturn2) {
-        t = e;
-      } else {
-        t = g.logger.error(`Error: ${e}`);
-      }
+      const t = transformError(g, e);
       if (s.postCommentOnError && t) {
         await g.commentHandler.postComment(g, t);
       }
@@ -31356,16 +31375,11 @@ async function createActionsPlugin(e, t) {
     await returnDataToKernel(s, i.stateId, t);
   } catch (e) {
     console.error(e);
-    let t;
-    if (e instanceof Error) {
-      dt.setFailed(e);
-      t = p.logger.error(`Error: ${e}`, { error: e });
-    } else if (e instanceof a) {
-      dt.setFailed(e.logMessage.raw);
-      t = e;
-    } else {
-      dt.setFailed(`Error: ${e}`);
-      t = p.logger.error(`Error: ${e}`);
+    const t = transformError(p, e);
+    if (t instanceof a) {
+      dt.setFailed(t.logMessage.diff);
+    } else if (t instanceof Error) {
+      dt.setFailed(t);
     }
     if (r.postCommentOnError && t) {
       await p.commentHandler.postComment(p, t);
@@ -31415,7 +31429,7 @@ const _t = createActionsPlugin((e) => runPlugin(e), {
   envSchema: Tt,
   ...(process.env.KERNEL_PUBLIC_KEY && { kernelPublicKey: process.env.KERNEL_PUBLIC_KEY }),
   postCommentOnError: true,
-  bypassSignatureVerification: true,
+  bypassSignatureVerification: process.env.NODE_ENV === "local",
 });
 var Dt = s.A;
 export { Dt as default };
