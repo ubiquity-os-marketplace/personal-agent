@@ -31402,10 +31402,11 @@ async function helloWorld(e) {
   const A = r.issue.number;
   const n = r.repository.owner.login;
   const i = r.comment.body;
-  if (!i.trim().startsWith("@")) {
+  const a = e.env.AGENT_OWNER;
+  t.info(`Executing helloWorld:`, { sender: s, repo: o, issueNumber: A, owner: n, agentOwner: a });
+  if (!i.trim().startsWith(`@${a}`)) {
     throw t.error(`Comment does not start with @`, { body: i });
   }
-  t.debug(`Executing helloWorld:`, { sender: s, repo: o, issueNumber: A, owner: n });
   await e.commentHandler.postComment(e, t.ok("Hello, world!"));
   t.ok(`Successfully created comment!`);
   t.verbose(`Exiting helloWorld`);
@@ -31421,7 +31422,7 @@ async function runPlugin(e) {
   t.error(`Unsupported event: ${r}`);
 }
 var Rt = __nccwpck_require__(2874);
-const Tt = tt.Object({ LOG_LEVEL: tt.Optional(tt.Enum(n, { default: n.INFO })), KERNEL_PUBLIC_KEY: tt.Optional(tt.String()) });
+const Tt = tt.Object({ LOG_LEVEL: tt.Optional(tt.Enum(n, { default: n.INFO })), KERNEL_PUBLIC_KEY: tt.Optional(tt.String()), AGENT_OWNER: tt.String() });
 const kt = tt.Object({}, { default: {} });
 const _t = createActionsPlugin((e) => runPlugin(e), {
   logLevel: process.env.LOG_LEVEL || n.INFO,
