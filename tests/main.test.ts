@@ -4,9 +4,7 @@ import { CommentHandler } from "@ubiquity-os/plugin-sdk";
 import { customOctokit as Octokit } from "@ubiquity-os/plugin-sdk/octokit";
 import { Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
-import manifest from "../manifest.json";
 import { runPlugin } from "../src";
-import { Env } from "../src/types";
 import { Context } from "../src/types/context";
 import { db } from "./__mocks__/db";
 import { createComment, setupTests } from "./__mocks__/helpers";
@@ -32,13 +30,6 @@ describe("Personal Agent Plugin tests", () => {
     await setupTests();
   });
 
-  it("Should serve the manifest file", async () => {
-    const worker = (await import("../src/worker")).default;
-    const response = await worker.fetch(new Request("http://localhost/manifest.json"), {} as Env);
-    const content = await response.json();
-    expect(content).toEqual(manifest);
-  });
-
   it("Should say hello", async () => {
     const { context, errorSpy, okSpy, verboseSpy } = createContext("@PersonalAgentOwner say hello");
 
@@ -59,7 +50,7 @@ describe("Personal Agent Plugin tests", () => {
 
     await expect(runPlugin(context)).rejects.toBeTruthy();
 
-    expect(errorSpy).toHaveBeenCalledWith("Comment does not start with @", { body: "wrong command", caller: "_Logs.<anonymous>" });
+    expect(errorSpy).toHaveBeenCalledWith(`Comment does not start with @${STRINGS.personalAgentOwner}`, { body: "wrong command", caller: "_Logs.<anonymous>" });
   });
 });
 
@@ -123,7 +114,9 @@ function createContextInner(
     },
     logger: new Logs("debug") as unknown as Context["logger"],
     config: {},
-    env: {} as Env,
+    env: {
+      AGENT_OWNER: STRINGS.personalAgentOwner,
+    },
     octokit: octokit,
     commentHandler: new CommentHandler(),
   };

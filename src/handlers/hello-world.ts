@@ -13,7 +13,7 @@ export async function helloWorld(context: Context) {
   logger.info(`Executing helloWorld:`, { sender, repo, issueNumber, owner, agentOwner });
 
   if (!body.trim().startsWith(`@${agentOwner}`)) {
-    throw logger.error(`Comment does not start with @`, { body });
+    throw logger.error(`Comment does not start with @${agentOwner}`, { body });
   }
 
   await context.commentHandler.postComment(context, logger.ok("Hello, world!"));
