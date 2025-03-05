@@ -13,13 +13,21 @@ Communication between [UbiquityOS](https://github.com/apps/ubiquity-os) and the 
 
 - Make sure the Personal Agent Bridge is also configured. You can read its [documentation](https://github.com/ubiquity-os-marketplace/personal-agent-bridge/blob/development/README.md).
 
-- Fork this repository with exactly the same name `personal-agent` under your personal or your organization account.
+- Fork this repository with exactly the same name `personal-agent` under your personal account.
 
-- Generate a Github clasic Personal Access Token PAT with access to repositories.
+- Generate a GitHub classic Personal Access Token PAT with access to repositories.
 
 - Encrypt your PAT with UbiquityOS's `X25519_PUBLIC_KEY` using [keygen.ubq.fi](https://keygen.ubq.fi/).
 
-- Add the encrypted PAT in your fork's `.github/personal-agent.config.yml` file.
+- Take your encrypted PAT and convert it to this format: `PAT_TOKEN:OWNER_ID:REPOSITORY_ID` where `OWNER_ID` is your personal GitHub account ID and `REPOSITORY_ID` is the ID of your `personal-agent` repository.
+
+- Add the encrypted PAT in your fork's `.github/personal-agent.config.yml` file in `GITHUB_PAT_ENCRYPTED` property. Make sure to use the default branch.
+
+Example config:
+
+```yaml
+GITHUB_PAT_ENCRYPTED: xxxxxx
+```
 
 ## Usage
 
