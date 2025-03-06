@@ -11,8 +11,6 @@ Communication between [UbiquityOS](https://github.com/apps/ubiquity-os) and the 
 
 ## How to set up?
 
-- Make sure the Personal Agent Bridge is also configured. You can read its [documentation](https://github.com/ubiquity-os-marketplace/personal-agent-bridge/blob/development/README.md).
-
 - Fork this repository with exactly the same name `personal-agent` under your personal account.
 
 - Generate a GitHub classic Personal Access Token PAT with access to repositories.
@@ -41,9 +39,11 @@ Replace `username` with the username where the plugin has been forked. You shoul
 
 ## Troubleshooting
 
-In most cases you should also receive an error message if there is a problem. If you do not get any response or want to look into the details of an error, check Personal Agent Bridge and Personal Agent fork's actions logs.
+Check [Personal Agent Bridge](https://github.com/ubiquity-os-marketplace/personal-agent-bridge) and Personal Agent fork's Actions run logs.
 
 ## Get started with development
+
+- First, configure your own Personal Agent Bridge. You can read its [documentation](https://github.com/ubiquity-os-marketplace/personal-agent-bridge/blob/development/README.md).
 
 - Install dependencies
 
