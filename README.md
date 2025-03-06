@@ -15,7 +15,7 @@ Communication between [UbiquityOS](https://github.com/apps/ubiquity-os) and the 
 
 - Generate a GitHub classic Personal Access Token PAT with access to repositories.
 
-- Encrypt your PAT with UbiquityOS's `X25519_PUBLIC_KEY` using [keygen.ubq.fi](https://keygen.ubq.fi/).
+- Encrypt your PAT with UbiquityOS's `X25519_PUBLIC_KEY` using [keygen.ubq.fi](https://keygen.ubq.fi/). Current public key is `hdgyJSh473Sf4RJQjovpiKZn5jf-IsGeOBnmDBwYAyY`.
 
 - Take your encrypted PAT and convert it to this format: `PAT_TOKEN:OWNER_ID:REPOSITORY_ID` where `OWNER_ID` is your personal GitHub account ID and `REPOSITORY_ID` is the ID of your `personal-agent` repository.
 
@@ -39,7 +39,7 @@ Replace `username` with the username where the plugin has been forked. You shoul
 
 ## Troubleshooting
 
-Check [Personal Agent Bridge](https://github.com/ubiquity-os-marketplace/personal-agent-bridge) and Personal Agent fork's Actions run logs.
+Check [Personal Agent Bridge](https://github.com/ubiquity-os-marketplace/personal-agent-bridge/actions/workflows/compute.yml) and Personal Agent fork's Actions logs.
 
 ## Get started with development
 
