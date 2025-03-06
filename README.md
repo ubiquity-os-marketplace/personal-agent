@@ -1,93 +1,62 @@
-# `@ubiquity-os/plugin-template`
+# `@ubiquity-os/personal-agent`
 
-## Prerequisites
+The Personal Agent is a [UbiquityOS](https://github.com/apps/ubiquity-os) plugin designed to run actions in user's Github account. It is forked, configured, and hosted by a Github user. Any issue comment beginning with `@username` is forwarded to this plugin for processing. Find below a list features offered by the plugin:
 
-- A good understanding of how the [kernel](https://github.com/ubiquity/ubiquibot-kernel) works and how to interact with it.
-- A basic understanding of the Ubiquibot configuration and how to define your plugin's settings.
+- `@username say hello`
+  The plugin should respond with a `Hello, world!`.
 
-## Getting Started
+More features coming soon...
 
-1. Create a new repository using this template.
-2. Clone the repository to your local machine.
-3. Install the dependencies preferably using `bun`.
+Communication between [UbiquityOS](https://github.com/apps/ubiquity-os) and the [Personal Agent](https://github.com/ubiquity-os-marketplace/personal-agent) plugin is handled by [Personal Agent Bridge](https://github.com/ubiquity-os-marketplace/personal-agent-bridge).
 
-## Creating a new plugin
+## How to set up?
 
-- If your plugin is to be used as a slash command which should have faster response times as opposed to longer running GitHub action tasks, you should use the `worker` type.
+- Fork this repository with exactly the same name `personal-agent` under your personal account.
 
-1. Ensure you understand and have setup the [kernel](https://github.com/ubiquity/ubiquibot-kernel).
-2. Update [compute.yml](./.github/workflows/compute.yml) with your plugin's name and update the `id`.
-3. Update [context.ts](./src/types/context.ts) with the events that your plugin will fire on.
-4. Update [manifest.json](./manifest.json) with a proper description of your plugin.
-5. Update [plugin-input.ts](./src/types/plugin-input.ts) to match the `with:` settings in your org or repo level configuration.
+- Generate a GitHub classic Personal Access Token PAT with access to repositories.
 
-- Your plugin config should look similar to this:
+- Encrypt your PAT with UbiquityOS's `X25519_PUBLIC_KEY` using [keygen.ubq.fi](https://keygen.ubq.fi/). Current public key is `hdgyJSh473Sf4RJQjovpiKZn5jf-IsGeOBnmDBwYAyY`.
 
-```yml
-plugins:
-  - name: hello-world
-    id: hello-world
-    uses:
-      - plugin: http://localhost:4000
-        with:
-          # Define configurable items here and the kernel will pass these to the plugin.
-          configurableResponse: "Hello, is it me you are looking for?"
-          customStringsUrl: "https://raw.githubusercontent.com/ubiquibot/plugin-template/development/strings.json"
+- Take your encrypted PAT and convert it to this format: `PAT_TOKEN:OWNER_ID:REPOSITORY_ID` where `OWNER_ID` is your personal GitHub account ID and `REPOSITORY_ID` is the ID of your `personal-agent` repository.
+
+- Add the encrypted PAT in your fork's `.github/personal-agent.config.yml` file in `GITHUB_PAT_ENCRYPTED` property. Make sure to use the default branch.
+
+Example config:
+
+```yaml
+GITHUB_PAT_ENCRYPTED: xxxxxx
 ```
 
-###### At this stage, your plugin will fire on your defined events with the required settings passed in from the kernel. You can now start writing your plugin's logic.
+## Usage
 
-6. Start building your plugin by adding your logic to the [plugin.ts](./src/index.ts) file.
+Go to any repository issue where UbiquityOS is installed. Comment as below:
 
-## Testing a plugin
-
-### Worker Plugins
-
-- `bun worker` - to run the worker locally.
-- To trigger the worker, `POST` requests to http://localhost:4000/ with an event payload similar to:
-
-```ts
-await fetch("http://localhost:4000/", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    stateId: "",
-    eventName: "",
-    eventPayload: "",
-    settings: "",
-    ref: "",
-    authToken: "",
-  }),
-});
+```
+@username say hello
 ```
 
-A full example can be found [here](https://github.com/ubiquibot/assistive-pricing/blob/623ea3f950f04842f2d003bda3fc7b7684e41378/tests/http/request.http).
+Replace `username` with the username where the plugin has been forked. You should get a reply from the personal-agent of the user.
 
-#### Deploying the Worker
+## Troubleshooting
 
-For testing purposes, the worker can be deployed through the Worker Deploy and Worker Delete workflows. It requires to
-create a personal [Cloudflare Account](https://www.cloudflare.com/), and fill the `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` within your
-GitHub Action Secrets.
+Check [Personal Agent Bridge](https://github.com/ubiquity-os-marketplace/personal-agent-bridge/actions/workflows/compute.yml) and Personal Agent fork's Actions logs.
 
-### Action Plugins
+## Get started with development
 
-- Ensure the kernel is running and listening for events.
-- Fire an event in/to the repo where the kernel is installed. This can be done in a number of ways, the easiest being via the GitHub UI or using the GitHub API, such as posting a comment, opening an issue, etc in the org/repo where the kernel is installed.
-- The kernel will process the event and dispatch it using the settings defined in your `.ubiquibot-config.yml`.
-- The `compute.yml` workflow will run and execute your plugin's logic.
-- You can view the logs in the Actions tab of your repo.
+- First, configure your own Personal Agent Bridge. You can read its [documentation](https://github.com/ubiquity-os-marketplace/personal-agent-bridge/blob/development/README.md).
 
-[Nektos Act](https://github.com/nektos/act) - a tool for running GitHub Actions locally.
+- Install dependencies
+
+```
+bun install
+```
+
+- Run tests
+
+```
+bun run test
+```
 
 ## More information
 
-- [Full Ubiquibot Configuration](https://github.com/ubiquity/ubiquibot/blob/0fde7551585499b1e0618ec8ea5e826f11271c9c/src/types/configuration-types.ts#L62) - helpful for defining your plugin's settings as they are strongly typed and will be validated by the kernel.
-- [Ubiquibot V1](https://github.com/ubiquity/ubiquibot) - helpful for porting V1 functionality to V2, helper/utility functions, types, etc. Everything is based on the V1 codebase but with a more modular approach. When using V1 code, keep in mind that most all code will need refactored to work with the new V2 architecture.
-
-## Examples
-
-- [Start/Stop Slash Command](https://github.com/ubq-testing/start-stop-module) - simple
-- [Assistive Pricing Plugin](https://github.com/ubiquibot/assistive-pricing) - complex
-- [Conversation Rewards](https://github.com/ubiquibot/conversation-rewards) - really complex
+The initial discussion about the development of this plugin can be found [here](https://github.com/ubiquity-os/plugins-wishlist/issues/3).

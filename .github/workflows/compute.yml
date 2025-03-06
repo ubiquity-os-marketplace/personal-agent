@@ -1,4 +1,4 @@
-name: "the name of the plugin"
+name: "Personal Agent Compute"
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
 
 jobs:
   compute:
-    name: "plugin name"
+    name: "Personal Agent"
     runs-on: ubuntu-latest
     permissions: write-all
     environment: ${{ github.ref == 'refs/heads/main' && 'main' || 'development' }}
@@ -31,8 +31,7 @@ jobs:
       PLUGIN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       KERNEL_PUBLIC_KEY: ${{ secrets.KERNEL_PUBLIC_KEY }}
       LOG_LEVEL: ${{ secrets.LOG_LEVEL || 'info' }}
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      AGENT_OWNER: ${{ github.repository_owner }}
 
     steps:
       - uses: actions/checkout@v4

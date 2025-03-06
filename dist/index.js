@@ -1,3 +1,4 @@
+import "./sourcemap-register.cjs";
 import { createRequire as e } from "module";
 var t = {
   4914: function (e, t, r) {
@@ -5392,271 +5393,6 @@ var t = {
         }
       });
     }
-  },
-  2801: (e, t, r) => {
-    const s = r(9896);
-    const o = r(6928);
-    const A = r(857);
-    const n = r(6982);
-    const i = r(5094);
-    const a = i.version;
-    const c = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
-    function parse(e) {
-      const t = {};
-      let r = e.toString();
-      r = r.replace(/\r\n?/gm, "\n");
-      let s;
-      while ((s = c.exec(r)) != null) {
-        const e = s[1];
-        let r = s[2] || "";
-        r = r.trim();
-        const o = r[0];
-        r = r.replace(/^(['"`])([\s\S]*)\1$/gm, "$2");
-        if (o === '"') {
-          r = r.replace(/\\n/g, "\n");
-          r = r.replace(/\\r/g, "\r");
-        }
-        t[e] = r;
-      }
-      return t;
-    }
-    function _parseVault(e) {
-      const t = _vaultPath(e);
-      const r = l.configDotenv({ path: t });
-      if (!r.parsed) {
-        const e = new Error(`MISSING_DATA: Cannot parse ${t} for an unknown reason`);
-        e.code = "MISSING_DATA";
-        throw e;
-      }
-      const s = _dotenvKey(e).split(",");
-      const o = s.length;
-      let A;
-      for (let e = 0; e < o; e++) {
-        try {
-          const t = s[e].trim();
-          const o = _instructions(r, t);
-          A = l.decrypt(o.ciphertext, o.key);
-          break;
-        } catch (t) {
-          if (e + 1 >= o) {
-            throw t;
-          }
-        }
-      }
-      return l.parse(A);
-    }
-    function _log(e) {
-      console.log(`[dotenv@${a}][INFO] ${e}`);
-    }
-    function _warn(e) {
-      console.log(`[dotenv@${a}][WARN] ${e}`);
-    }
-    function _debug(e) {
-      console.log(`[dotenv@${a}][DEBUG] ${e}`);
-    }
-    function _dotenvKey(e) {
-      if (e && e.DOTENV_KEY && e.DOTENV_KEY.length > 0) {
-        return e.DOTENV_KEY;
-      }
-      if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
-        return process.env.DOTENV_KEY;
-      }
-      return "";
-    }
-    function _instructions(e, t) {
-      let r;
-      try {
-        r = new URL(t);
-      } catch (e) {
-        if (e.code === "ERR_INVALID_URL") {
-          const e = new Error(
-            "INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development"
-          );
-          e.code = "INVALID_DOTENV_KEY";
-          throw e;
-        }
-        throw e;
-      }
-      const s = r.password;
-      if (!s) {
-        const e = new Error("INVALID_DOTENV_KEY: Missing key part");
-        e.code = "INVALID_DOTENV_KEY";
-        throw e;
-      }
-      const o = r.searchParams.get("environment");
-      if (!o) {
-        const e = new Error("INVALID_DOTENV_KEY: Missing environment part");
-        e.code = "INVALID_DOTENV_KEY";
-        throw e;
-      }
-      const A = `DOTENV_VAULT_${o.toUpperCase()}`;
-      const n = e.parsed[A];
-      if (!n) {
-        const e = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${A} in your .env.vault file.`);
-        e.code = "NOT_FOUND_DOTENV_ENVIRONMENT";
-        throw e;
-      }
-      return { ciphertext: n, key: s };
-    }
-    function _vaultPath(e) {
-      let t = null;
-      if (e && e.path && e.path.length > 0) {
-        if (Array.isArray(e.path)) {
-          for (const r of e.path) {
-            if (s.existsSync(r)) {
-              t = r.endsWith(".vault") ? r : `${r}.vault`;
-            }
-          }
-        } else {
-          t = e.path.endsWith(".vault") ? e.path : `${e.path}.vault`;
-        }
-      } else {
-        t = o.resolve(process.cwd(), ".env.vault");
-      }
-      if (s.existsSync(t)) {
-        return t;
-      }
-      return null;
-    }
-    function _resolveHome(e) {
-      return e[0] === "~" ? o.join(A.homedir(), e.slice(1)) : e;
-    }
-    function _configVault(e) {
-      _log("Loading env from encrypted .env.vault");
-      const t = l._parseVault(e);
-      let r = process.env;
-      if (e && e.processEnv != null) {
-        r = e.processEnv;
-      }
-      l.populate(r, t, e);
-      return { parsed: t };
-    }
-    function configDotenv(e) {
-      const t = o.resolve(process.cwd(), ".env");
-      let r = "utf8";
-      const A = Boolean(e && e.debug);
-      if (e && e.encoding) {
-        r = e.encoding;
-      } else {
-        if (A) {
-          _debug("No encoding is specified. UTF-8 is used by default");
-        }
-      }
-      let n = [t];
-      if (e && e.path) {
-        if (!Array.isArray(e.path)) {
-          n = [_resolveHome(e.path)];
-        } else {
-          n = [];
-          for (const t of e.path) {
-            n.push(_resolveHome(t));
-          }
-        }
-      }
-      let i;
-      const a = {};
-      for (const t of n) {
-        try {
-          const o = l.parse(s.readFileSync(t, { encoding: r }));
-          l.populate(a, o, e);
-        } catch (e) {
-          if (A) {
-            _debug(`Failed to load ${t} ${e.message}`);
-          }
-          i = e;
-        }
-      }
-      let c = process.env;
-      if (e && e.processEnv != null) {
-        c = e.processEnv;
-      }
-      l.populate(c, a, e);
-      if (i) {
-        return { parsed: a, error: i };
-      } else {
-        return { parsed: a };
-      }
-    }
-    function config(e) {
-      if (_dotenvKey(e).length === 0) {
-        return l.configDotenv(e);
-      }
-      const t = _vaultPath(e);
-      if (!t) {
-        _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${t}. Did you forget to build it?`);
-        return l.configDotenv(e);
-      }
-      return l._configVault(e);
-    }
-    function decrypt(e, t) {
-      const r = Buffer.from(t.slice(-64), "hex");
-      let s = Buffer.from(e, "base64");
-      const o = s.subarray(0, 12);
-      const A = s.subarray(-16);
-      s = s.subarray(12, -16);
-      try {
-        const e = n.createDecipheriv("aes-256-gcm", r, o);
-        e.setAuthTag(A);
-        return `${e.update(s)}${e.final()}`;
-      } catch (e) {
-        const t = e instanceof RangeError;
-        const r = e.message === "Invalid key length";
-        const s = e.message === "Unsupported state or unable to authenticate data";
-        if (t || r) {
-          const e = new Error("INVALID_DOTENV_KEY: It must be 64 characters long (or more)");
-          e.code = "INVALID_DOTENV_KEY";
-          throw e;
-        } else if (s) {
-          const e = new Error("DECRYPTION_FAILED: Please check your DOTENV_KEY");
-          e.code = "DECRYPTION_FAILED";
-          throw e;
-        } else {
-          throw e;
-        }
-      }
-    }
-    function populate(e, t, r = {}) {
-      const s = Boolean(r && r.debug);
-      const o = Boolean(r && r.override);
-      if (typeof t !== "object") {
-        const e = new Error("OBJECT_REQUIRED: Please check the processEnv argument being passed to populate");
-        e.code = "OBJECT_REQUIRED";
-        throw e;
-      }
-      for (const r of Object.keys(t)) {
-        if (Object.prototype.hasOwnProperty.call(e, r)) {
-          if (o === true) {
-            e[r] = t[r];
-          }
-          if (s) {
-            if (o === true) {
-              _debug(`"${r}" is already defined and WAS overwritten`);
-            } else {
-              _debug(`"${r}" is already defined and was NOT overwritten`);
-            }
-          }
-        } else {
-          e[r] = t[r];
-        }
-      }
-    }
-    const l = {
-      configDotenv: configDotenv,
-      _configVault: _configVault,
-      _parseVault: _parseVault,
-      config: config,
-      decrypt: decrypt,
-      parse: parse,
-      populate: populate,
-    };
-    e.exports.configDotenv = l.configDotenv;
-    e.exports._configVault = l._configVault;
-    e.exports._parseVault = l._parseVault;
-    e.exports.config = l.config;
-    e.exports.decrypt = l.decrypt;
-    e.exports.parse = l.parse;
-    e.exports.populate = l.populate;
-    e.exports = l;
   },
   3251: function (e) {
     (function (t, r) {
@@ -22133,11 +21869,6 @@ var t = {
     e.exports.xL = safeParse;
     t = n;
   },
-  5094: (e) => {
-    e.exports = JSON.parse(
-      '{"name":"dotenv","version":"16.4.5","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"types":"./lib/main.d.ts","require":"./lib/main.js","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","pretest":"npm run lint && npm run dts-check","test":"tap tests/*.js --100 -Rspec","test:coverage":"tap --coverage-report=lcov","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"funding":"https://dotenvx.com","keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@definitelytyped/dtslint":"^0.0.133","@types/node":"^18.11.3","decache":"^4.6.1","sinon":"^14.0.1","standard":"^17.0.0","standard-markdown":"^7.1.0","standard-version":"^9.5.0","tap":"^16.3.0","tar":"^6.1.11","typescript":"^4.8.4"},"engines":{"node":">=12"},"browser":{"fs":false}}'
-    );
-  },
   56: (e) => {
     e.exports = JSON.parse(
       '{"name":"dotenv","version":"16.4.7","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"types":"./lib/main.d.ts","require":"./lib/main.js","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","pretest":"npm run lint && npm run dts-check","test":"tap run --allow-empty-coverage --disable-coverage --timeout=60000","test:coverage":"tap run --show-full-coverage --timeout=60000 --coverage-report=lcov","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"funding":"https://dotenvx.com","keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@types/node":"^18.11.3","decache":"^4.6.2","sinon":"^14.0.1","standard":"^17.0.0","standard-version":"^9.5.0","tap":"^19.2.0","typescript":"^4.8.4"},"engines":{"node":">=12"},"browser":{"fs":false}}'
@@ -31248,7 +30979,7 @@ function default_Default(...e) {
   return e.length === 3 ? default_Visit(e[0], e[1], e[2]) : default_Visit(e[0], [], e[1]);
 }
 var dt = __nccwpck_require__(7484);
-var ht = __nccwpck_require__(2801);
+var ht = __nccwpck_require__(8889);
 var It = class _PluginRuntimeInfo {
   static _instance = null;
   _env = {};
@@ -31300,82 +31031,139 @@ function getPluginOptions(e) {
     bypassSignatureVerification: e?.bypassSignatureVerification || false,
   };
 }
-var Qt = "UbiquityOS";
-var postComment = async function (e, t, r = { updateComment: true, raw: false }) {
-  let s;
-  if ("issue" in e.payload) {
-    s = e.payload.issue.number;
-  } else if ("pull_request" in e.payload) {
-    s = e.payload.pull_request.number;
-  } else if ("discussion" in e.payload) {
-    s = e.payload.discussion.number;
-  } else {
-    e.logger.info("Cannot post comment because issue is not found in the payload.");
-    return null;
-  }
-  if ("repository" in e.payload && e.payload.repository?.owner?.login) {
-    const o = await createStructuredMetadataWithMessage(e, t, r);
-    if (r.updateComment && postComment.lastCommentId) {
-      const t = await e.octokit.rest.issues.updateComment({
-        owner: e.payload.repository.owner.login,
-        repo: e.payload.repository.name,
-        comment_id: postComment.lastCommentId,
-        body: o,
-      });
-      return { ...t.data, issueNumber: s };
-    } else {
-      const t = await e.octokit.rest.issues.createComment({
-        owner: e.payload.repository.owner.login,
-        repo: e.payload.repository.name,
-        issue_number: s,
-        body: o,
-      });
-      postComment.lastCommentId = t.data.id;
-      return { ...t.data, issueNumber: s };
+var Qt = class _CommentHandler {
+  static HEADER_NAME = "UbiquityOS";
+  _lastCommentId = { reviewCommentId: null, issueCommentId: null };
+  async _updateIssueComment(e, t) {
+    if (!this._lastCommentId.issueCommentId) {
+      throw e.logger.error("issueCommentId is missing");
     }
-  } else {
-    e.logger.info("Cannot post comment because repository is not found in the payload.", { payload: e.payload });
+    const r = await e.octokit.rest.issues.updateComment({ owner: t.owner, repo: t.repo, comment_id: this._lastCommentId.issueCommentId, body: t.body });
+    return { ...r.data, issueNumber: t.issueNumber };
   }
-  return null;
+  async _updateReviewComment(e, t) {
+    if (!this._lastCommentId.reviewCommentId) {
+      throw e.logger.error("reviewCommentId is missing");
+    }
+    const r = await e.octokit.rest.pulls.updateReviewComment({ owner: t.owner, repo: t.repo, comment_id: this._lastCommentId.reviewCommentId, body: t.body });
+    return { ...r.data, issueNumber: t.issueNumber };
+  }
+  async _createNewComment(e, t) {
+    if (t.commentId) {
+      const r = await e.octokit.rest.pulls.createReplyForReviewComment({
+        owner: t.owner,
+        repo: t.repo,
+        pull_number: t.issueNumber,
+        comment_id: t.commentId,
+        body: t.body,
+      });
+      this._lastCommentId.reviewCommentId = r.data.id;
+      return { ...r.data, issueNumber: t.issueNumber };
+    }
+    const r = await e.octokit.rest.issues.createComment({ owner: t.owner, repo: t.repo, issue_number: t.issueNumber, body: t.body });
+    this._lastCommentId.issueCommentId = r.data.id;
+    return { ...r.data, issueNumber: t.issueNumber };
+  }
+  _getIssueNumber(e) {
+    if ("issue" in e.payload) return e.payload.issue.number;
+    if ("pull_request" in e.payload) return e.payload.pull_request.number;
+    if ("discussion" in e.payload) return e.payload.discussion.number;
+    return void 0;
+  }
+  _getCommentId(e) {
+    return "pull_request" in e.payload && "comment" in e.payload ? e.payload.comment.id : void 0;
+  }
+  _extractIssueContext(e) {
+    if (!("repository" in e.payload) || !e.payload.repository?.owner?.login) {
+      return null;
+    }
+    const t = this._getIssueNumber(e);
+    if (!t) return null;
+    return { issueNumber: t, commentId: this._getCommentId(e), owner: e.payload.repository.owner.login, repo: e.payload.repository.name };
+  }
+  async _processMessage(e, t) {
+    if (t instanceof Error) {
+      const r = { message: t.message, name: t.name, stack: t.stack };
+      return { metadata: r, logMessage: e.logger.error(t.message).logMessage };
+    }
+    const r = t.metadata
+      ? {
+          ...t.metadata,
+          message: t.metadata.message,
+          stack: t.metadata.stack || t.metadata.error?.stack,
+          caller: t.metadata.caller || t.metadata.error?.stack?.split("\n")[2]?.match(/at (\S+)/)?.[1],
+        }
+      : { ...t };
+    return { metadata: r, logMessage: t.logMessage };
+  }
+  _getInstigatorName(e) {
+    if ("installation" in e.payload && e.payload.installation && "account" in e.payload.installation && e.payload.installation?.account?.name) {
+      return e.payload.installation?.account?.name;
+    }
+    return e.payload.sender?.login || _CommentHandler.HEADER_NAME;
+  }
+  async _createMetadataContent(e, t) {
+    const r = sanitizeMetadata(t);
+    const s = this._getInstigatorName(e);
+    const o = It.getInstance().runUrl;
+    const A = await It.getInstance().version;
+    const n = t.caller || "anonymous";
+    return { header: `\x3c!-- ${_CommentHandler.HEADER_NAME} - ${n} - ${A} - @${s} - ${o}`, jsonPretty: r };
+  }
+  _formatMetadataContent(e, t, r) {
+    const s = ["```json", r, "```"].join("\n");
+    const o = [t, r, "--\x3e"].join("\n");
+    return e?.type === "fatal" ? [s, o].join("\n") : o;
+  }
+  async _createCommentBody(e, t, r) {
+    const { metadata: s, logMessage: o } = await this._processMessage(e, t);
+    const { header: A, jsonPretty: n } = await this._createMetadataContent(e, s);
+    const i = this._formatMetadataContent(o, A, n);
+    return `${r.raw ? o?.raw : o?.diff}\n\n${i}\n`;
+  }
+  async postComment(e, t, r = { updateComment: true, raw: false }) {
+    const s = this._extractIssueContext(e);
+    if (!s) {
+      e.logger.info("Cannot post comment: missing issue context in payload");
+      return null;
+    }
+    const o = await this._createCommentBody(e, t, r);
+    const { issueNumber: A, commentId: n, owner: i, repo: a } = s;
+    const c = { owner: i, repo: a, body: o, issueNumber: A };
+    if (r.updateComment) {
+      if (this._lastCommentId.issueCommentId && !("pull_request" in e.payload && "comment" in e.payload)) {
+        return this._updateIssueComment(e, c);
+      }
+      if (this._lastCommentId.reviewCommentId && "pull_request" in e.payload && "comment" in e.payload) {
+        return this._updateReviewComment(e, c);
+      }
+    }
+    return this._createNewComment(e, { ...c, commentId: n });
+  }
 };
-async function createStructuredMetadataWithMessage(e, t, r) {
-  let s;
-  let o;
-  let A;
-  let n;
-  if (t instanceof Error) {
-    n = { message: t.message, name: t.name, stack: t.stack };
-    o = t.stack?.split("\n")[2]?.match(/at (\S+)/)?.[1] ?? "anonymous";
-    s = e.logger.error(t.message).logMessage;
-  } else if (t.metadata) {
-    n = {
-      message: t.metadata.message,
-      stack: t.metadata.stack || t.metadata.error?.stack,
-      caller: t.metadata.caller || t.metadata.error?.stack?.split("\n")[2]?.match(/at (\S+)/)?.[1],
-    };
-    s = t.logMessage;
-    o = n.caller;
+function transformError(e, t) {
+  let r;
+  if (t instanceof AggregateError) {
+    r = e.logger.error(
+      t.errors
+        .map((e) => {
+          if (e instanceof a) {
+            return e.logMessage.raw;
+          } else if (e instanceof Error) {
+            return e.message;
+          } else {
+            return e;
+          }
+        })
+        .join("\n\n"),
+      { error: t }
+    );
+  } else if (t instanceof Error || t instanceof a) {
+    r = t;
   } else {
-    n = { ...t };
+    r = e.logger.error(String(t));
   }
-  const i = sanitizeMetadata(n);
-  if ("installation" in e.payload && e.payload.installation && "account" in e.payload.installation) {
-    A = e.payload.installation?.account?.name;
-  } else {
-    A = e.payload.sender?.login || Qt;
-  }
-  const a = It.getInstance().runUrl;
-  const c = await It.getInstance().version;
-  const l = `\x3c!-- ${Qt} - ${o} - ${c} - @${A} - ${a}`;
-  let u;
-  const g = ["```json", i, "```"].join("\n");
-  const p = [l, i, "--\x3e"].join("\n");
-  if (s?.type === "fatal") {
-    u = [g, p].join("\n");
-  } else {
-    u = p;
-  }
-  return `${r.raw ? s?.raw : s?.diff}\n\n${u}\n`;
+  return r;
 }
 var Bt = {
   throttle: {
@@ -31440,7 +31228,7 @@ function createPlugin(e, t, r) {
   const s = getPluginOptions(r);
   const o = new Hono();
   o.get("/manifest.json", (e) => e.json(t));
-  o.post("/", async (t) => {
+  o.post("/", async function appPost(t) {
     if (t.req.header("content-type") !== "application/json") {
       throw new HTTPException(400, { message: "Content-Type must be application/json" });
     }
@@ -31499,20 +31287,16 @@ function createPlugin(e, t, r) {
       config: i,
       env: a,
       logger: new Logs(s.logLevel),
+      commentHandler: new Qt(),
     };
     try {
       const r = await e(g);
       return t.json({ stateId: n.stateId, output: r ?? {} });
     } catch (e) {
       console.error(e);
-      let t;
-      if (e instanceof Error || e instanceof LogReturn2) {
-        t = e;
-      } else {
-        t = g.logger.error(`Error: ${e}`);
-      }
+      const t = transformError(g, e);
       if (s.postCommentOnError && t) {
-        await postComment(g, t);
+        await g.commentHandler.postComment(g, t);
       }
       throw new HTTPException(500, { message: "Unexpected error" });
     }
@@ -31531,7 +31315,7 @@ async function createActionsPlugin(e, t) {
   const A = [...Errors(bt, o)];
   if (A.length) {
     console.dir(A, { depth: null });
-    dt.setFailed(`Error: Invalid inputs payload: ${A.join(",")}`);
+    dt.setFailed(`Error: Invalid inputs payload: ${A.map((e) => e.message).join(", ")}`);
     return;
   }
   const n = o.signature;
@@ -31546,6 +31330,7 @@ async function createActionsPlugin(e, t) {
       l = Decode(r.settingsSchema, default_Default(r.settingsSchema, i.settings));
     } catch (e) {
       console.dir(...Errors(r.settingsSchema, i.settings), { depth: null });
+      dt.setFailed(`Error: Invalid settings provided.`);
       throw e;
     }
   } else {
@@ -31557,6 +31342,7 @@ async function createActionsPlugin(e, t) {
       u = Decode(r.envSchema, default_Default(r.envSchema, process.env));
     } catch (e) {
       console.dir(...Errors(r.envSchema, process.env), { depth: null });
+      dt.setFailed(`Error: Invalid environment provided.`);
       throw e;
     }
   } else {
@@ -31581,6 +31367,7 @@ async function createActionsPlugin(e, t) {
     config: l,
     env: u,
     logger: new c(r.logLevel),
+    commentHandler: new Qt(),
   };
   try {
     const t = await e(p);
@@ -31588,19 +31375,14 @@ async function createActionsPlugin(e, t) {
     await returnDataToKernel(s, i.stateId, t);
   } catch (e) {
     console.error(e);
-    let t;
-    if (e instanceof Error) {
-      dt.setFailed(e);
-      t = p.logger.error(`Error: ${e}`, { error: e });
-    } else if (e instanceof a) {
-      dt.setFailed(e.logMessage.raw);
-      t = e;
-    } else {
-      dt.setFailed(`Error: ${e}`);
-      t = p.logger.error(`Error: ${e}`);
+    const t = transformError(p, e);
+    if (t instanceof a) {
+      dt.setFailed(t.logMessage.diff);
+    } else if (t instanceof Error) {
+      dt.setFailed(t);
     }
     if (r.postCommentOnError && t) {
-      await postComment(p, t);
+      await p.commentHandler.postComment(p, t);
     }
   }
 }
@@ -31614,27 +31396,19 @@ async function returnDataToKernel(e, t, r) {
   });
 }
 async function helloWorld(e) {
-  const {
-    logger: t,
-    payload: r,
-    config: { configurableResponse: s, customStringsUrl: o },
-  } = e;
-  const A = r.comment.user?.login;
-  const n = r.repository.name;
-  const i = r.issue.number;
-  const a = r.repository.owner.login;
-  const c = r.comment.body;
-  if (!RegExp(/hello/i).exec(c)) {
-    t.error(`Invalid use of slash command, use "/hello".`, { body: c });
+  const { logger: t, payload: r } = e;
+  const s = r.comment.user?.login;
+  const o = r.repository.name;
+  const A = r.issue.number;
+  const n = r.repository.owner.login;
+  const i = r.comment.body;
+  const a = e.env.AGENT_OWNER;
+  t.info(`Executing helloWorld:`, { sender: s, repo: o, issueNumber: A, owner: n, agentOwner: a });
+  if (!i.trim().startsWith(`@${a}`)) {
+    t.info(`Comment does not start with @${a}`, { body: i });
     return;
   }
-  t.info("Hello, world!");
-  t.debug(`Executing helloWorld:`, { sender: A, repo: n, issueNumber: i, owner: a });
-  await postComment(e, t.ok(s));
-  if (o) {
-    const r = await fetch(o).then((e) => e.json());
-    await postComment(e, t.ok(r.greeting));
-  }
+  await e.commentHandler.postComment(e, t.ok("Hello, world!"));
   t.ok(`Successfully created comment!`);
   t.verbose(`Exiting helloWorld`);
 }
@@ -31649,8 +31423,8 @@ async function runPlugin(e) {
   t.error(`Unsupported event: ${r}`);
 }
 var Rt = __nccwpck_require__(2874);
-const Tt = tt.Object({ LOG_LEVEL: tt.Optional(tt.Enum(n, { default: n.INFO })), KERNEL_PUBLIC_KEY: tt.Optional(tt.String()) });
-const kt = tt.Object({ configurableResponse: tt.String({ default: "Hello, world!" }), customStringsUrl: tt.Optional(tt.String()) }, { default: {} });
+const Tt = tt.Object({ LOG_LEVEL: tt.Optional(tt.Enum(n, { default: n.INFO })), KERNEL_PUBLIC_KEY: tt.Optional(tt.String()), AGENT_OWNER: tt.String() });
+const kt = tt.Object({}, { default: {} });
 const _t = createActionsPlugin((e) => runPlugin(e), {
   logLevel: process.env.LOG_LEVEL || n.INFO,
   settingsSchema: kt,
@@ -31661,3 +31435,4 @@ const _t = createActionsPlugin((e) => runPlugin(e), {
 });
 var Dt = s.A;
 export { Dt as default };
+//# sourceMappingURL=index.js.map
