@@ -17,6 +17,8 @@ Communication between [UbiquityOS](https://github.com/apps/ubiquity-os) and the 
 
 - Add PAT to your fork's Actions secret called `USER_PAT`.
 
+- Install [Ubiquity-OS](https://github.com/marketplace/ubiquity-os) Github App to your fork
+
 ## Usage
 
 Go to any repository issue where UbiquityOS is installed. Comment as below:
