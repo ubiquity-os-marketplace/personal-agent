@@ -116,6 +116,7 @@ function createContextInner(
     config: {},
     env: {
       AGENT_OWNER: STRINGS.personalAgentOwner,
+      USER_PAT: "mock-token",
     },
     octokit: octokit,
     commentHandler: new CommentHandler(),
