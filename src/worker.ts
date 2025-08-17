@@ -1,6 +1,7 @@
-import { LOG_LEVEL, LogLevel } from "@ubiquity-os/ubiquity-os-logger";
 import { createPlugin } from "@ubiquity-os/plugin-sdk";
 import { Manifest } from "@ubiquity-os/plugin-sdk/manifest";
+import { customOctokit } from "@ubiquity-os/plugin-sdk/octokit";
+import { LOG_LEVEL, LogLevel } from "@ubiquity-os/ubiquity-os-logger";
 import { ExecutionContext } from "hono";
 import manifest from "../manifest.json";
 import { runPlugin } from "./index";
@@ -10,6 +11,7 @@ export default {
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext) {
     return createPlugin<PluginSettings, Env, null, SupportedEvents>(
       (context) => {
+        context.octokit = new customOctokit({ auth: context.env.USER_PAT });
         return runPlugin(context);
       },
       manifest as Manifest,

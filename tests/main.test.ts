@@ -1,11 +1,10 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { drop } from "@mswjs/data";
+import { CommentHandler } from "@ubiquity-os/plugin-sdk";
 import { customOctokit as Octokit } from "@ubiquity-os/plugin-sdk/octokit";
 import { Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
-import manifest from "../manifest.json";
 import { runPlugin } from "../src";
-import { Env } from "../src/types";
 import { Context } from "../src/types/context";
 import { db } from "./__mocks__/db";
 import { createComment, setupTests } from "./__mocks__/helpers";
@@ -14,6 +13,7 @@ import { STRINGS } from "./__mocks__/strings";
 
 dotenv.config();
 const octokit = new Octokit();
+const commentCreateEvent = "issue_comment.created";
 
 beforeAll(() => {
   server.listen();
@@ -24,63 +24,33 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-describe("Plugin tests", () => {
+describe("Personal Agent Plugin tests", () => {
   beforeEach(async () => {
     drop(db);
     await setupTests();
   });
 
-  it("Should serve the manifest file", async () => {
-    const worker = (await import("../src/worker")).default;
-    const response = await worker.fetch(new Request("http://localhost/manifest.json"), {});
-    const content = await response.json();
-    expect(content).toEqual(manifest);
-  });
+  it("Should say hello", async () => {
+    const { context, errorSpy, okSpy, verboseSpy } = createContext("@PersonalAgentOwner say hello");
 
-  it("Should handle an issue comment event", async () => {
-    const { context, infoSpy, errorSpy, debugSpy, okSpy, verboseSpy } = createContext();
-
-    expect(context.eventName).toBe("issue_comment.created");
-    expect(context.payload.comment.body).toBe("/Hello");
+    expect(context.eventName).toBe(commentCreateEvent);
 
     await runPlugin(context);
 
     expect(errorSpy).not.toHaveBeenCalled();
-    expect(debugSpy).toHaveBeenNthCalledWith(1, STRINGS.EXECUTING_HELLO_WORLD, {
-      caller: STRINGS.CALLER_LOGS_ANON,
-      sender: STRINGS.USER_1,
-      repo: STRINGS.TEST_REPO,
-      issueNumber: 1,
-      owner: STRINGS.USER_1,
-    });
-    expect(infoSpy).toHaveBeenNthCalledWith(1, STRINGS.HELLO_WORLD);
-    expect(okSpy).toHaveBeenNthCalledWith(2, STRINGS.SUCCESSFULLY_CREATED_COMMENT);
-    expect(verboseSpy).toHaveBeenNthCalledWith(1, STRINGS.EXITING_HELLO_WORLD);
+    expect(okSpy).toHaveBeenNthCalledWith(1, `Hello, world!`);
+    expect(okSpy).toHaveBeenNthCalledWith(2, `Successfully created comment!`);
+    expect(verboseSpy).toHaveBeenNthCalledWith(1, "Exiting helloWorld");
   });
 
-  it("Should respond with `Hello, World!` in response to /Hello", async () => {
-    const { context } = createContext();
-    await runPlugin(context);
-    const comments = db.issueComments.getAll();
-    expect(comments.length).toBe(1);
-    expect(comments[0].body).toMatch(STRINGS.HELLO_WORLD);
-  });
+  it("Should throw if comment doesn't start with @", async () => {
+    const { context, infoSpy } = createContext(`wrong command`);
 
-  it("Should respond with `Hello, Code Reviewers` in response to /Hello", async () => {
-    const { context } = createContext(STRINGS.CONFIGURABLE_RESPONSE);
-    await runPlugin(context);
-    const comments = db.issueComments.getAll();
-    expect(comments.length).toBe(1);
-    expect(comments[0].body).toMatch(STRINGS.CONFIGURABLE_RESPONSE);
-  });
+    expect(context.eventName).toBe(commentCreateEvent);
 
-  it("Should not respond to a comment that doesn't contain /Hello", async () => {
-    const { context, errorSpy } = createContext(STRINGS.CONFIGURABLE_RESPONSE, STRINGS.INVALID_COMMAND);
-    await runPlugin(context);
-    const comments = db.issueComments.getAll();
+    await expect(runPlugin(context)).resolves.toBeUndefined();
 
-    expect(comments.length).toBe(1);
-    expect(errorSpy).toHaveBeenNthCalledWith(1, STRINGS.INVALID_USE_OF_SLASH_COMMAND, { caller: STRINGS.CALLER_LOGS_ANON, body: STRINGS.INVALID_COMMAND });
+    expect(infoSpy).toHaveBeenCalledWith(`Comment does not start with @${STRINGS.personalAgentOwner}`, { body: "wrong command", caller: "_Logs.<anonymous>" });
   });
 });
 
@@ -92,14 +62,7 @@ describe("Plugin tests", () => {
  *
  * Refactor according to your needs.
  */
-function createContext(
-  configurableResponse: string = "Hello, world!", // we pass the plugin configurable items here
-  commentBody: string = "/Hello",
-  repoId: number = 1,
-  payloadSenderId: number = 1,
-  commentId: number = 1,
-  issueOne: number = 1
-) {
+function createContext(commentBody: string, repoId: number = 1, payloadSenderId: number = 1, commentId: number = 1, issueOne: number = 1) {
   const repo = db.repo.findFirst({ where: { id: { equals: repoId } } }) as unknown as Context["payload"]["repository"];
   const sender = db.users.findFirst({ where: { id: { equals: payloadSenderId } } }) as unknown as Context["payload"]["sender"];
   const issue1 = db.issue.findFirst({ where: { id: { equals: issueOne } } }) as unknown as Context["payload"]["issue"];
@@ -107,7 +70,7 @@ function createContext(
   createComment(commentBody, commentId); // create it first then pull it from the DB and feed it to _createContext
   const comment = db.issueComments.findFirst({ where: { id: { equals: commentId } } }) as unknown as Context["payload"]["comment"];
 
-  const context = createContextInner(repo, sender, issue1, comment, configurableResponse);
+  const context = createContextInner(repo, sender, issue1, comment);
   const infoSpy = jest.spyOn(context.logger, "info");
   const errorSpy = jest.spyOn(context.logger, "error");
   const debugSpy = jest.spyOn(context.logger, "debug");
@@ -135,9 +98,8 @@ function createContextInner(
   repo: Context["payload"]["repository"],
   sender: Context["payload"]["sender"],
   issue: Context["payload"]["issue"],
-  comment: Context["payload"]["comment"],
-  configurableResponse: string
-) {
+  comment: Context["payload"]["comment"]
+): Context {
   return {
     eventName: "issue_comment.created",
     command: null,
@@ -148,13 +110,15 @@ function createContextInner(
       issue: issue,
       comment: comment,
       installation: { id: 1 } as Context["payload"]["installation"],
-      organization: { login: STRINGS.USER_1 } as Context["payload"]["organization"],
+      organization: { login: STRINGS.USER } as Context["payload"]["organization"],
     },
-    logger: new Logs("debug"),
-    config: {
-      configurableResponse,
+    logger: new Logs("debug") as unknown as Context["logger"],
+    config: {},
+    env: {
+      AGENT_OWNER: STRINGS.personalAgentOwner,
+      USER_PAT: "mock-token",
     },
-    env: {} as Env,
     octokit: octokit,
-  } as unknown as Context;
+    commentHandler: new CommentHandler(),
+  };
 }
