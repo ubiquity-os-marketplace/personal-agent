@@ -37,10 +37,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: '20'
 
-      - name: execute directive
-        run: bun ./dist/index.js
+      - name: Install Claude CLI
+        run: |
+          echo "Installing Claude CLI..."
+          # Download and install the official Claude CLI
+          curl -fsSL https://claude.ai/install.sh | sh
+          # Add Claude to PATH
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "Claude CLI installed successfully"
+
+      - name: Execute Personal Agent
+        run: node ./dist/index.js
         id: plugin-name
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
