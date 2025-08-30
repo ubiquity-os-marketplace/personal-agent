@@ -22,7 +22,7 @@ export async function claudeAgent(context: Context): Promise<void> {
 
   // Extract the command after the username mention
   const command = body.trim().substring(`@${agentOwner}`.length).trim();
-  
+
   if (!command) {
     await context.commentHandler.postComment(context, logger.error("No command provided after username mention"));
     return;
@@ -44,15 +44,15 @@ Please provide a helpful and concise response to this command. Be friendly and p
 
     // Execute Claude with the prompt
     const response = await executeClaudeCommand(claudePrompt, logger);
-    
+
     // Post the Claude response as a comment
     await context.commentHandler.postComment(context, logger.ok(response));
-    
+
     logger.ok(`Successfully posted Claude response!`);
   } catch (error) {
     logger.error(`Failed to execute Claude command: ${error}`);
     await context.commentHandler.postComment(
-      context, 
+      context,
       logger.error(`Failed to process command with Claude: ${error instanceof Error ? error.message : String(error)}`)
     );
   }
@@ -62,43 +62,50 @@ Please provide a helpful and concise response to this command. Be friendly and p
 
 async function executeClaudeCommand(prompt: string, logger: { info: (msg: string) => void; verbose: (msg: string) => void }): Promise<string> {
   logger.info("Executing Claude CLI command...");
-  
+
   // Create a temporary file for the prompt (similar to Claude Code Action)
-  const tmpDir = process.env.RUNNER_TEMP || '/tmp';
+  const tmpDir = process.env.RUNNER_TEMP || "/tmp";
   const promptPath = join(tmpDir, `claude-prompt-${Date.now()}.txt`);
-  
+
   try {
     // Write prompt to temporary file
-    await writeFile(promptPath, prompt, 'utf8');
+    await writeFile(promptPath, prompt, "utf8");
     logger.verbose(`Wrote prompt to: ${promptPath}`);
-    
+
     return await new Promise((resolve, reject) => {
       // Use the official Claude CLI with proper arguments
       const claudeArgs = [
-        '--dangerously-skip-permissions',
-        '-p', promptPath,
-        '--verbose',
-        '--output-format', 'text'  // Use text format for simpler parsing
+        "--dangerously-skip-permissions",
+        "-p",
+        promptPath,
+        "--verbose",
+        "--output-format",
+        "text", // Use text format for simpler parsing
       ];
-      
-      logger.verbose(`Executing: claude ${claudeArgs.join(' ')}`);
-      
-      const claude = spawn(`${process.env.HOME || '/home/runner'}/.local/bin/claude`, claudeArgs, {
+
+      logger.verbose(`Executing: claude ${claudeArgs.join(" ")}`);
+
+      // Try to find claude in PATH first, fallback to known locations
+      const claudePath = process.env.CI
+        ? "claude" // In CI, rely on PATH
+        : `${process.env.HOME || "/home/runner"}/.local/bin/claude`;
+
+      const claude = spawn(claudePath, claudeArgs, {
         env: {
           ...process.env,
           // Claude CLI will use CLAUDE_CODE_OAUTH_TOKEN from environment
           CLAUDE_CODE_OAUTH_TOKEN: process.env.CLAUDE_CODE_OAUTH_TOKEN,
           // Set HOME to ensure Claude can find its config
-          HOME: process.env.HOME || '/home/runner'
+          HOME: process.env.HOME || "/home/runner",
         },
-        stdio: ['ignore', 'pipe', 'pipe']  // Ignore stdin, pipe stdout and stderr
+        stdio: ["ignore", "pipe", "pipe"], // Ignore stdin, pipe stdout and stderr
       });
 
-      let output = '';
-      let errorOutput = '';
+      let output = "";
+      let errorOutput = "";
       let hasOutput = false;
 
-      claude.stdout.on('data', (data) => {
+      claude.stdout.on("data", (data) => {
         const chunk = data.toString();
         output += chunk;
         hasOutput = true;
@@ -106,20 +113,20 @@ async function executeClaudeCommand(prompt: string, logger: { info: (msg: string
         logger.verbose(`Claude stdout chunk: ${chunk.substring(0, 100)}...`);
       });
 
-      claude.stderr.on('data', (data) => {
+      claude.stderr.on("data", (data) => {
         const chunk = data.toString();
         errorOutput += chunk;
         logger.verbose(`Claude stderr: ${chunk}`);
       });
 
-      claude.on('close', async (code) => {
+      claude.on("close", async (code) => {
         // Clean up the temporary prompt file
         try {
           await unlink(promptPath);
         } catch (error) {
           logger.verbose(`Failed to delete prompt file: ${error}`);
         }
-        
+
         if (code !== 0) {
           reject(new Error(`Claude CLI exited with code ${code}\nError output: ${errorOutput}\nStandard output: ${output}`));
         } else if (!hasOutput) {
@@ -128,23 +135,26 @@ async function executeClaudeCommand(prompt: string, logger: { info: (msg: string
           // Clean up the output - remove any ANSI codes or extra formatting
           const cleanOutput = output
             // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-            .replace(/\x1b\[[0-9;]*m/g, '') // Remove ANSI color codes
-            .replace(/^\s*Claude\s+Code\s+v[\d.]+\s*/gm, '') // Remove version headers
+            .replace(/\x1b\[[0-9;]*m/g, "") // Remove ANSI color codes
+            .replace(/^\s*Claude\s+Code\s+v[\d.]+\s*/gm, "") // Remove version headers
             .trim();
-          
-          resolve(cleanOutput || 'Claude generated an empty response.');
+
+          resolve(cleanOutput || "Claude generated an empty response.");
         }
       });
 
-      claude.on('error', (err) => {
+      claude.on("error", (err) => {
         reject(new Error(`Failed to spawn Claude CLI: ${err.message}`));
       });
-      
+
       // Add timeout to prevent hanging
-      setTimeout(() => {
-        claude.kill('SIGTERM');
-        reject(new Error('Claude CLI execution timed out after 5 minutes'));
-      }, 5 * 60 * 1000);
+      setTimeout(
+        () => {
+          claude.kill("SIGTERM");
+          reject(new Error("Claude CLI execution timed out after 5 minutes"));
+        },
+        5 * 60 * 1000
+      );
     });
   } finally {
     // Ensure cleanup even if there's an error

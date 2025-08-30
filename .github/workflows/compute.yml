@@ -60,10 +60,10 @@ jobs:
       - name: Install Claude CLI
         run: |
           echo "Installing Claude CLI..."
-          # Download and install the official Claude CLI
-          curl -fsSL https://claude.ai/install.sh | sh
-          # Add Claude to PATH
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          # Install Claude Code CLI via npm
+          npm install -g @anthropic-ai/claude-code
+          # Verify installation
+          which claude || echo "Claude binary location unknown"
           echo "Claude CLI installed successfully"
 
       - name: Execute Personal Agent
