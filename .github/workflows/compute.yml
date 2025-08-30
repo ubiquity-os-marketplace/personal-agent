@@ -22,15 +22,19 @@ on:
       authToken:
         description: "Auth Token"
         required: false
+        default: "test-auth-token"
       ref:
         description: "Ref"
         required: false
+        default: "refs/heads/claude-integration"
       signature:
         description: "The kernel signature"
         required: false
+        default: "test-signature"
       command:
         description: "Command from the Kernel"
         required: false
+        default: "{}"
       testMode:
         description: "Enable test mode (bypass signature verification)"
         type: boolean
