@@ -13,6 +13,8 @@ Communication between [UbiquityOS](https://github.com/apps/ubiquity-os) and the 
 
 - Fork this repository with exactly the same name `personal-agent` under your personal account.
 
+- ⚠️ Important: you must enable GitHub Actions on the repository after forking it.
+
 - Generate a GitHub classic Personal Access Token PAT with access to repositories.
 
 - Add PAT to your fork's Actions secret called `USER_PAT`.
