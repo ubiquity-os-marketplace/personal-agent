@@ -8,5 +8,5 @@
     "properties": {}
   },
   "homepage_url": "https://your-plugin-name-agent.ubiquity.workers.dev",
-  "short_name": "ubiquity-os-marketplace/personal-agent@development"
+  "short_name": "ubiquity-os-marketplace/personal-agent@fix/action-entry"
 }
