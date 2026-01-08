@@ -12,6 +12,7 @@ import "dotenv/config";
 export const envSchema = T.Object({
   LOG_LEVEL: T.Optional(T.Enum(LOG_LEVEL, { default: LOG_LEVEL.INFO })),
   KERNEL_PUBLIC_KEY: T.Optional(T.String()),
+  UOS_AI_TOKEN: T.Optional(T.String()),
   AGENT_OWNER: T.String(),
   USER_PAT: T.String(),
 });
