@@ -9,6 +9,5 @@
     "type": "object",
     "properties": {}
   },
-  "homepage_url": "https://your-plugin-name-agent.ubiquity.workers.dev",
-  "short_name": "ubiquity-os/personal-agent@development"
+  "homepage_url": "https://your-plugin-name-agent.ubiquity.workers.dev"
 }
