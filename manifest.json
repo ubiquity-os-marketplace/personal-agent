@@ -1,7 +1,7 @@
 {
-  "name": "plugin-template",
+  "name": "@ubiquity-os/personal-agent",
   "short_name": "gentlementlegen/personal-agent@codex/fix/manifest-build",
-  "description": "Ubiquibot plugin template repository with TypeScript support.",
+  "description": "Personal agent support for UbiquityOS",
   "ubiquity:listeners": [],
   "skipBotEvents": true,
   "configuration": {
