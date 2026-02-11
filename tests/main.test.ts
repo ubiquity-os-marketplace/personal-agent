@@ -101,6 +101,7 @@ function createContextInner(
   comment: Context["payload"]["comment"]
 ): Context {
   return {
+    authToken: "my-token",
     eventName: "issue_comment.created",
     command: null,
     payload: {
