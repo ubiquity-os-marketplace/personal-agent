@@ -10,7 +10,7 @@
     "node": ">=20.10.0"
   },
   "scripts": {
-    "build": "tsc --project --noEmit tsconfig.json",
+    "build": "tsc --noEmit --project tsconfig.json",
     "format": "run-p format:*",
     "check-formatting": "run-p check-formatting:lint check-formatting:prettier format:cspell",
     "check-formatting:lint": "eslint --fix-dry-run",
