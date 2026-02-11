@@ -2,7 +2,7 @@
   "name": "@ubiquity-os/personal-agent",
   "short_name": "gentlementlegen/personal-agent@codex/fix/manifest-build",
   "description": "Personal agent support for UbiquityOS",
-  "ubiquity:listeners": [],
+  "ubiquity:listeners": ["issue_comment.created"],
   "skipBotEvents": true,
   "configuration": {
     "default": {},
