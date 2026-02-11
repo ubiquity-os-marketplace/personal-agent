@@ -44,13 +44,13 @@ describe("Personal Agent Plugin tests", () => {
   });
 
   it("Should throw if comment doesn't start with @", async () => {
-    const { context, infoSpy } = createContext(`wrong command`);
+    const { context, debugSpy } = createContext(`wrong command`);
 
     expect(context.eventName).toBe(commentCreateEvent);
 
     await expect(runPlugin(context)).resolves.toBeUndefined();
 
-    expect(infoSpy).toHaveBeenCalledWith(`Comment does not start with @${STRINGS.personalAgentOwner}`, { body: "wrong command", caller: "_Logs.<anonymous>" });
+    expect(debugSpy).toHaveBeenCalledWith(`Comment does not start with @${STRINGS.personalAgentOwner}`, expect.objectContaining({ body: "wrong command" }));
   });
 });
 
