@@ -1,12 +1,13 @@
 {
-  "name": "Personal Agent",
-  "description": "Personal agent processes commands from UbiquityOS in user's Github actions",
+  "name": "@ubiquity-os/personal-agent",
+  "short_name": "gentlementlegen/personal-agent@codex/fix/manifest-build",
+  "description": "Personal agent support for UbiquityOS",
   "ubiquity:listeners": ["issue_comment.created"],
+  "skipBotEvents": true,
   "configuration": {
     "default": {},
     "type": "object",
     "properties": {}
   },
-  "homepage_url": "https://your-plugin-name-agent.ubiquity.workers.dev",
-  "short_name": "ubiquity-os/personal-agent@development"
+  "homepage_url": "https://your-plugin-name-agent.ubiquity.workers.dev"
 }
