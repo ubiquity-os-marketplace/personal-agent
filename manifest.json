@@ -1,7 +1,9 @@
 {
-  "name": "Personal Agent",
-  "description": "Personal agent processes commands from UbiquityOS in user's Github actions",
-  "ubiquity:listeners": ["issue_comment.created"],
+  "name": "plugin-template",
+  "short_name": "gentlementlegen/personal-agent@feat/320-workflow-artifact-migration",
+  "description": "Ubiquibot plugin template repository with TypeScript support.",
+  "ubiquity:listeners": [],
+  "skipBotEvents": true,
   "configuration": {
     "default": {},
     "type": "object",
