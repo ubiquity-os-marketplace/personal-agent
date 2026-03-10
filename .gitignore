@@ -17,3 +17,5 @@ script.ts
 .wrangler
 test-dashboard.md
 dist
+manifest.json
+dist/
