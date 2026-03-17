@@ -147,7 +147,7 @@ jobs:
           token: ${{ secrets.DENO_DEPLOY_TOKEN }}
           action: ${{ github.event_name == 'delete' && 'delete' || 'deploy' }}
           organization: ${{ secrets.DENO_ORG_NAME }}
-          entrypoint: ${{ github.event_name == 'delete' && 'src/deno.ts' || steps.adapter.outputs.entrypoint }}
+          entrypoint: ${{ github.event_name == 'delete' && 'src/worker.ts' || steps.adapter.outputs.entrypoint }}
           project_name: ${{ secrets.DENO_PROJECT_NAME }}
           sourceRef: ${{ steps.refs.outputs.source_ref }}
           artifactPrefix: dist/
